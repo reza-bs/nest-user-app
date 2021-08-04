@@ -1,4 +1,4 @@
-import { Injectable, NotAcceptableException } from '@nestjs/common';
+import { HttpException, Injectable, NotAcceptableException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { Model } from 'mongoose';
@@ -9,27 +9,33 @@ export class UsersService {
   constructor(@InjectModel('User') private readonly userModel: Model<IUser>) {}
 
   public async getUsers() {
-    const users = await this.userModel.find().select('-password').exec();
-    if (!users && !users[0]) {
-      // throw new HttpException("No user available", 404)
-      return 'No users';
+    try {
+      const users = await this.userModel.find().select('-password').exec();
+      if (!users && !users[0]) {
+        throw new HttpException('No user available', 404);
+      }
+      return users;
+    } catch (err) {
+      throw err;
     }
-    return users;
   }
 
   public async getUserById(id) {
-    console.log(id.id);
-    const user = await this.userModel
+    try{
+      const user = await this.userModel
       .findOne({ _id: id.id })
       .select('-password')
       .exec();
-    console.log('result:', user);
-    if (!user) {
-      // throw new HttpException("No user available", 404)
-      return 'No users';
-    }
+      if (!user) {
+        throw new HttpException("No user available", 404)
+      }
 
-    return user;
+      return user;
+    }
+    catch (err) {
+      throw err;
+    }
+    
   }
 
   public async createUser(newUser) {
@@ -39,11 +45,9 @@ export class UsersService {
       const newPassword = await bcrypt.hash(password, 10);
 
       const emailExists = await this.userModel.find({ email });
-      // console.log(emailExists)
 
       if (emailExists && emailExists[0]) {
         throw new NotAcceptableException();
-        // return 'mail already exists';
       }
 
       const user = await new this.userModel({
@@ -59,7 +63,6 @@ export class UsersService {
         lastName,
         email,
       };
-      // return "nice"
     }
 
     catch(err){
@@ -69,7 +72,9 @@ export class UsersService {
   }
 
   public async updateUser(id, newUser) {
-    let updatedUser = newUser
+
+    try{
+      let updatedUser = newUser
     if(newUser.password){
       const newPassword = await bcrypt.hash(newUser.password, 10);
       updatedUser={...newUser, password: newPassword}
@@ -81,27 +86,29 @@ export class UsersService {
       .select('-password')
       .exec();
     if (!user) {
-      // throw new HttpException("No user available", 404)
-      return 'No users';
+      throw new HttpException("No user available", 404)
     }
     return user;
-    // return {
-    //   ...user._id,
-    //   firstName,
-    //   lastName,
-    //   email,
-    // };
+    }
+    catch (err) {
+      throw err;
+    }
+    
   }
 
   public async deleteUser(id) {
-    const user = await this.userModel
-      .deleteOne({ _id: id.id })
-      .select('-password')
-      .exec();
-    if (user.deletedCount === 0) {
-      // throw new HttpException("No user available", 404)
-      return 'No users';
+
+    try {
+      const user = await this.userModel
+        .deleteOne({ _id: id.id })
+        .select('-password')
+        .exec();
+      if (user.deletedCount === 0) {
+        throw new HttpException('No user available', 404);
+      }
+      return user;
+    } catch (err) {
+      throw err;
     }
-    return user;
   }
 }
