@@ -5,40 +5,39 @@ import {
   Get,
   Param,
   Patch,
-  Post,
-  Query
+  Post
 } from '@nestjs/common';
 import { UserDto } from './user.dto';
 import { UsersService } from './users.service';
 
-@Controller()
+@Controller('users')
 export class UsersController {
-  constructor(private userService: UsersService){}
+  constructor(private userService: UsersService) {}
 
   @Get()
-  public getUsers(){
+  public getUsers() {
     return this.userService.getUsers();
   }
 
   @Get(':id')
-  public getUserById(@Param() id:any){
+  public getUserById(@Param() id: any) {
     return this.userService.getUserById(id);
   }
 
-  @Post('create')
-  public createUser(@Body() user:UserDto){
+  @Post()
+  public createUser(@Body() user: UserDto) {
     return this.userService.createUser(user);
   }
 
-  @Patch('edit/:id')
-  public updateUser(@Param() id:any, @Query() query){
-    const propertyName = query.property_name;
-    const propertyValue = query.property_value;
-    return this.userService.updateUser(id, propertyName, propertyValue);
+  @Patch(':id')
+  public updateUser(@Param() id: any, @Body() user: any) {
+    // const propertyName = query.property_name;
+    // const propertyValue = query.property_value;
+    return this.userService.updateUser(id, user);
   }
 
-  @Delete('delete/:id')
-  public deleteUser(@Param() id:any){
+  @Delete(':id')
+  public deleteUser(@Param() id: any) {
     return this.userService.deleteUser(id);
   }
 }
