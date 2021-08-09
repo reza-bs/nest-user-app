@@ -5,8 +5,12 @@ import {
   Get,
   Param,
   Patch,
-  Post
+  Post,
+  Req,
+  Res
 } from '@nestjs/common';
+import { Request, Response } from 'express';
+import { AuthDto } from './../auth/auth.dto';
 import { UserDto } from './user.dto';
 import { UsersService } from './users.service';
 
@@ -29,10 +33,20 @@ export class UsersController {
     return this.userService.createUser(user);
   }
 
+  @Post('login')
+  async login(@Body() auth:AuthDto, @Res({passthrough: true}) response: Response){
+    return this.userService.login(auth, response)
+  }
+
+  
+
+  @Post('dashboard')
+  async dashboard(@Req() request: Request){
+    return this.userService.dashboard(request)
+  }
+
   @Patch(':id')
   public updateUser(@Param() id: any, @Body() user: any) {
-    // const propertyName = query.property_name;
-    // const propertyValue = query.property_value;
     return this.userService.updateUser(id, user);
   }
 
@@ -40,4 +54,6 @@ export class UsersController {
   public deleteUser(@Param() id: any) {
     return this.userService.deleteUser(id);
   }
+
+  
 }

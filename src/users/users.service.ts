@@ -1,12 +1,13 @@
-import { HttpException, Injectable, NotAcceptableException } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, NotAcceptableException, UnauthorizedException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { Model } from 'mongoose';
-import { IUser } from './interfaces/user.interface';
+import { IUser } from '../interfaces/user.interface';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel('User') private readonly userModel: Model<IUser>) {}
+  constructor(@InjectModel('User') private readonly userModel: Model<IUser>, private jwtService:JwtService) {}
 
   public async getUsers() {
     try {
@@ -41,7 +42,7 @@ export class UsersService {
   public async createUser(newUser) {
 
     try{
-      const { firstName, lastName, email, password } = newUser;
+      const { firstName, lastName, email, password, role } = newUser;
       const newPassword = await bcrypt.hash(password, 10);
 
       const emailExists = await this.userModel.find({ email });
@@ -55,6 +56,7 @@ export class UsersService {
         lastName,
         email,
         password: newPassword,
+        role
       });
 
       await user.save();
@@ -69,6 +71,66 @@ export class UsersService {
       throw new NotAcceptableException("Email already exists");
     }
       
+  }
+
+  public async login(data, response){
+    try{
+      const {email, password} = data
+
+      
+      const user = await this.userModel.findOne({email})
+      
+      if(!user){
+        throw new BadRequestException()
+      }
+
+      if(!await bcrypt.compare(password, user.password)){
+        throw new BadRequestException('Password mismatch');
+      }
+      
+
+      const jwt = await this.jwtService.signAsync({
+        id: user._id,
+        role: user.role,
+      });
+
+      response.cookie('jwt', jwt, {httpOnly: true})
+
+      
+      return {
+        token: jwt
+      }
+    }
+
+    catch(err){
+      throw new BadRequestException("error")
+    }
+
+  }
+
+  public async dashboard(request){
+    try{
+      
+      const cookie = request.cookies['jwt']
+
+      const data = await this.jwtService.verifyAsync(cookie)
+      if(!data){
+        throw new UnauthorizedException("no data available");
+      }
+
+      const user = await this.userModel.findOne({_id: data['id']})
+
+      if(user.role === 'admin'){
+        return "Here is the dashboard";
+      }
+
+      return "You are not allowed to authorize this section"
+    }
+
+    catch(err){
+      console.log(err)
+      throw err;
+    }
   }
 
   public async updateUser(id, newUser) {
@@ -110,5 +172,9 @@ export class UsersService {
     } catch (err) {
       throw err;
     }
+  }
+
+  async findOne(email:string){
+    return this.userModel.find({email: email})
   }
 }
