@@ -1,9 +1,9 @@
-import { BadRequestException, HttpException, Injectable, NotAcceptableException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, NotAcceptableException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { Model } from 'mongoose';
-import { IUser } from '../interfaces/user.interface';
+import { IUser } from '../../interfaces/user.interface';
 
 @Injectable()
 export class UsersService {
@@ -108,29 +108,8 @@ export class UsersService {
 
   }
 
-  public async dashboard(request){
-    try{
-      
-      const cookie = request.cookies['jwt']
-
-      const data = await this.jwtService.verifyAsync(cookie)
-      if(!data){
-        throw new UnauthorizedException("no data available");
-      }
-
-      const user = await this.userModel.findOne({_id: data['id']})
-
-      if(user.role === 'admin'){
-        return "Here is the dashboard";
-      }
-
-      return "You are not allowed to authorize this section"
-    }
-
-    catch(err){
-      console.log(err)
-      throw err;
-    }
+  public async dashboard(){
+    return "Here is your dashboard"
   }
 
   public async updateUser(id, newUser) {

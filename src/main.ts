@@ -5,7 +5,7 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.use(cookieParser());
-
+  // app.useGlobalGuards(new RolesGuard());
   await app.listen(3000);
 }
 bootstrap();

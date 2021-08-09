@@ -5,12 +5,12 @@ import {
   Get,
   Param,
   Patch,
-  Post,
-  Req,
-  Res
+  Post, Res,
+  UseGuards
 } from '@nestjs/common';
-import { Request, Response } from 'express';
-import { AuthDto } from './../auth/auth.dto';
+import { Response } from 'express';
+import { RolesGuard } from 'src/guards/roles.guard';
+import { AuthDto } from '../auth/auth.dto';
 import { UserDto } from './user.dto';
 import { UsersService } from './users.service';
 
@@ -34,15 +34,17 @@ export class UsersController {
   }
 
   @Post('login')
-  async login(@Body() auth:AuthDto, @Res({passthrough: true}) response: Response){
-    return this.userService.login(auth, response)
+  async login(
+    @Body() auth: AuthDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    return this.userService.login(auth, response);
   }
 
-  
-
   @Post('dashboard')
-  async dashboard(@Req() request: Request){
-    return this.userService.dashboard(request)
+  @UseGuards(RolesGuard)
+  async dashboard() {
+    return this.userService.dashboard();
   }
 
   @Patch(':id')
@@ -54,6 +56,4 @@ export class UsersController {
   public deleteUser(@Param() id: any) {
     return this.userService.deleteUser(id);
   }
-
-  
 }
