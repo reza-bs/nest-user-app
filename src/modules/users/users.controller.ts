@@ -8,6 +8,7 @@ import {
   Post, Res,
   UseGuards
 } from '@nestjs/common';
+import { ApiParam } from '@nestjs/swagger';
 import { Response } from 'express';
 import { RolesGuard } from 'src/guards/roles.guard';
 import { AuthDto } from '../auth/auth.dto';
@@ -24,6 +25,7 @@ export class UsersController {
   }
 
   @Get(':id')
+  @ApiParam({ name: 'id', required: true })
   public getUserById(@Param() id: any) {
     return this.userService.getUserById(id);
   }
@@ -48,11 +50,13 @@ export class UsersController {
   }
 
   @Patch(':id')
-  public updateUser(@Param() id: any, @Body() user: any) {
+  @ApiParam({ name: 'id', required: true })
+  public updateUser(@Param() id: any, @Body() user: UserDto) {
     return this.userService.updateUser(id, user);
   }
 
   @Delete(':id')
+  @ApiParam({ name: 'id', required: true })
   public deleteUser(@Param() id: any) {
     return this.userService.deleteUser(id);
   }
