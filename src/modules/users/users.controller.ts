@@ -24,6 +24,11 @@ export class UsersController {
     return this.userService.getUsers();
   }
 
+  // @Get('fjdagad')
+  // public getUsersonly() {
+  //   return this.userService.getUsers();
+  // }
+
   @Get(':id')
   @ApiParam({ name: 'id', required: true })
   public getUserById(@Param() id: any) {
