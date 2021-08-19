@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { ApiParam } from '@nestjs/swagger';
 import { Response } from 'express';
-import { RolesGuard } from 'src/guards/roles.guard';
+import { RolesGuard } from '../../guards/roles.guard';
 import { AuthDto } from '../auth/auth.dto';
 import { UserDto } from './user.dto';
 import { UsersService } from './users.service';
